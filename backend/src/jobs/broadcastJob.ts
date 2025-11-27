@@ -4,6 +4,6 @@ export interface BroadcastJob {
   recipients: string[];
   text: string;
   attachments?: string[];
-  telegramSessionId: string;
+  telegramSessionId?: string;
   priority?: "low" | "normal" | "high";
 }

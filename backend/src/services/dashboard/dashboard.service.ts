@@ -15,6 +15,7 @@ const LIMIT_CATEGORY_ALIASES: Record<string, DashboardLimitCategory> = {
   audience_segments: "audience",
   broadcast_messages: "broadcast",
   broadcast_campaigns: "broadcast",
+  broadcast_used: "broadcast",
 };
 
 const PARSING_STATUS_FAILURES = new Set(["failed", "error", "errored", "cancelled"]);
