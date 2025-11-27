@@ -1,7 +1,9 @@
 export interface BroadcastJob {
-  broadcastId: string;
-  audience: string[];
-  payload: string;
-  priority?: "low" | "normal" | "high";
+  campaignId: string;
+  userId: string;
+  recipients: string[];
+  text: string;
   attachments?: string[];
+  telegramSessionId: string;
+  priority?: "low" | "normal" | "high";
 }
