@@ -603,6 +603,42 @@ export async function getUserStats(userId: string): Promise<DashboardStats> {
   };
 }
 
+function buildDashboardCacheKey(userId: string): string {
+  return `${DASHBOARD_CACHE_PREFIX}:${userId}`;
+}
+
+async function readDashboardCache(userId: string): Promise<DashboardResponse | null> {
+  try {
+    const cached = await withRedisClient((client) => client.get(buildDashboardCacheKey(userId)));
+    if (!cached) {
+      return null;
+    }
+
+    return JSON.parse(cached) as DashboardResponse;
+  } catch (error) {
+    logger.warn("Failed to read dashboard cache", { userId, error });
+    return null;
+  }
+}
+
+async function writeDashboardCache(userId: string, data: DashboardResponse): Promise<void> {
+  try {
+    await withRedisClient((client) =>
+      client.setEx(buildDashboardCacheKey(userId), DASHBOARD_CACHE_TTL_SECONDS, JSON.stringify(data)),
+    );
+  } catch (error) {
+    logger.warn("Failed to write dashboard cache", { userId, error });
+  }
+}
+
+export async function invalidateDashboardCache(userId: string): Promise<void> {
+  try {
+    await withRedisClient((client) => client.del(buildDashboardCacheKey(userId)));
+  } catch (error) {
+    logger.warn("Failed to invalidate dashboard cache", { userId, error });
+  }
+}
+
 export async function getDashboardData(userId: string): Promise<DashboardResponse> {
   const cached = await readDashboardCache(userId);
   if (cached) {
