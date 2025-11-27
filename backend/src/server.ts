@@ -16,6 +16,7 @@ import { registerDashboardRoutes } from "@/routes/dashboard";
 import { registerParsingRoutes } from "@/routes/parsing";
 import { registerAudienceRoutes } from "@/routes/audience";
 import { registerBroadcastRoutes } from "@/routes/broadcast";
+import { registerSubscriptionRoutes } from "@/routes/subscription";
 
 function getRequestId(headers: Record<string, string | string[] | undefined>) {
   const headerValue = headers[config.server.requestIdHeader] ?? headers["x-request-id"];
@@ -57,6 +58,7 @@ export async function createServer(): Promise<FastifyInstance> {
   await app.register(registerParsingRoutes, { prefix: "/api/v1/parsing" });
   await app.register(registerAudienceRoutes, { prefix: "/api/v1/audience" });
   await app.register(registerBroadcastRoutes, { prefix: "/api/v1/broadcast" });
+  await app.register(registerSubscriptionRoutes, { prefix: "/api/v1/subscription" });
 
   return app;
 }

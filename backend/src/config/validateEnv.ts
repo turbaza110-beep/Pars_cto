@@ -20,6 +20,12 @@ const envSchema = z.object({
   REQUEST_BODY_LIMIT: z.coerce.number().default(1_048_576),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
+  ROBOKASSA_MERCHANT_LOGIN: z.string().default("demo"),
+  ROBOKASSA_PASSWORD1: z.string().default("password1"),
+  ROBOKASSA_PASSWORD2: z.string().default("password2"),
+  ROBOKASSA_IS_TEST: z.coerce.boolean().default(true),
+  ROBOKASSA_SUCCESS_URL: z.string().url().optional(),
+  ROBOKASSA_FAIL_URL: z.string().url().optional(),
 });
 
 export type EnvSchema = z.infer<typeof envSchema>;
