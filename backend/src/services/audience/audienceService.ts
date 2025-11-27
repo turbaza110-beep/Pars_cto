@@ -512,6 +512,7 @@ export async function getSegmentPreview(userId: string, segmentId: string, limit
   const values: unknown[] = [segment.sourceParsingId, userId];
   const clauses = buildFilterClauses(segment.filters, values);
   values.push(normalizedLimit);
+  const limitPlaceholder = "$" + values.length;
 
   const rows = await pgPool.query<PreviewRow>(
     `SELECT pc.channel_id, pc.username, pc.metadata
@@ -520,7 +521,7 @@ export async function getSegmentPreview(userId: string, segmentId: string, limit
      WHERE ph.id = $1 AND ph.user_id = $2
      ${clauses.length > 0 ? `AND ${clauses.join(" AND ")}` : ""}
      ORDER BY pc.member_count DESC
-     LIMIT $${values.length}`,
+     LIMIT ${limitPlaceholder}`,
     values,
   );
 
@@ -528,4 +529,44 @@ export async function getSegmentPreview(userId: string, segmentId: string, limit
     total: segment.totalRecipients,
     preview: rows.rows.map(mapPreviewRow),
   } satisfies SegmentPreviewResult;
+}
+
+export async function getSegmentRecipients(userId: string, segmentId: string): Promise<string[]> {
+  const segment = await getSegment(userId, segmentId);
+  if (!segment.sourceParsingId) {
+    return [];
+  }
+
+  const values: unknown[] = [segment.sourceParsingId, userId];
+  const clauses = buildFilterClauses(segment.filters, values);
+
+  const rows = await pgPool.query<{ username: string | null; channel_id: string }>(
+    `SELECT pc.username, pc.channel_id
+     FROM parsed_channels pc
+     JOIN parsing_history ph ON ph.id = pc.parsing_history_id
+     WHERE ph.id = $1 AND ph.user_id = $2
+     ${clauses.length > 0 ? `AND ${clauses.join(" AND ")}` : ""}
+     ORDER BY pc.member_count DESC`,
+    values,
+  );
+
+  const recipients: string[] = [];
+  const seen = new Set<string>();
+
+  for (const row of rows.rows) {
+    const formatted = formatUsername(row.username) ?? row.username ?? null;
+    const candidate = formatted ?? row.channel_id;
+    if (!candidate) {
+      continue;
+    }
+
+    if (seen.has(candidate)) {
+      continue;
+    }
+
+    seen.add(candidate);
+    recipients.push(candidate);
+  }
+
+  return recipients;
 }
