@@ -1,6 +1,7 @@
 import { createServer } from "./server";
 
 import { config } from "@/config/config";
+import { startCronJobs, stopCronJobs } from "@/services/cron/cronScheduler";
 import { bootstrapQueues, shutdownQueues } from "@/services/queue.service";
 import { ensureTelegramClient } from "@/services/telegram.service";
 import { connectDatastores, disconnectDatastores } from "@/utils/clients";
@@ -10,6 +11,7 @@ async function start() {
   try {
     await connectDatastores();
     await bootstrapQueues();
+    startCronJobs();
 
     if (config.telegram.apiId && config.telegram.apiHash) {
       await ensureTelegramClient();
@@ -39,6 +41,7 @@ async function start() {
       logger.info("Received shutdown signal", { signal });
       try {
         await server.close();
+        stopCronJobs();
         await shutdownQueues();
         await disconnectDatastores();
         logger.info("Cleanup complete, exiting process");
@@ -58,6 +61,7 @@ async function start() {
     });
   } catch (error) {
     logger.error("Failed to start backend", { error });
+    stopCronJobs();
     await shutdownQueues().catch((queueError) => {
       logger.error("Failed to stop queues after startup failure", { queueError });
     });
