@@ -60,6 +60,14 @@ export const config = {
     apiHash: rawEnv.TELEGRAM_API_HASH ?? "",
     session: rawEnv.TELEGRAM_SESSION ?? "",
   },
+  robokassa: {
+    merchantLogin: rawEnv.ROBOKASSA_MERCHANT_LOGIN,
+    password1: rawEnv.ROBOKASSA_PASSWORD1,
+    password2: rawEnv.ROBOKASSA_PASSWORD2,
+    isTest: rawEnv.ROBOKASSA_IS_TEST,
+    successUrl: rawEnv.ROBOKASSA_SUCCESS_URL ?? `${resolvedFrontendUrl}/payment/success`,
+    failUrl: rawEnv.ROBOKASSA_FAIL_URL ?? `${resolvedFrontendUrl}/payment/fail`,
+  },
 } as const;
 
 export type AppConfig = typeof config;
